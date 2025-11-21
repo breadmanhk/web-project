@@ -1,0 +1,73 @@
+/**
+ * SEHS4517 Web Application Development and Management
+ * Responsive Styles - Mobile and Tablet
+ */
+
+/* ========================================
+   MOBILE (max-width: 768px)
+   ======================================== */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    h1 {
+        font-size: 1.4em;
+    }
+
+    h2 {
+        font-size: 1.8em;
+    }
+
+    .movie-carousel-container {
+        padding: 0 50px;
+    }
+
+    .movie-card {
+        min-width: 220px;
+        max-width: 220px;
+    }
+
+    .movie-card.center {
+        transform: scale(1.05);
+    }
+
+    .carousel-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+    }
+
+    nav {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    nav a {
+        width: 100%;
+        text-align: center;
+    }
+
+    .btn-group {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   TABLET (769px - 1024px)
+   ======================================== */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .movie-card {
+        min-width: 250px;
+        max-width: 250px;
+    }
+
+    .movie-card.center {
+        transform: scale(1.1);
+    }
+}

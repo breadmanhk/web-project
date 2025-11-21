@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <!-- Gold Gradient for Premium Look -->
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f4d03f;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#d4af37;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b6914;stop-opacity:1" />
+    </linearGradient>
+    <!-- Radial Gradient for Center -->
+    <radialGradient id="centerGlow">
+      <stop offset="0%" style="stop-color:#f4d03f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d4af37;stop-opacity:1" />
+    </radialGradient>
+    <!-- Subtle Glow Effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Outer Film Reel Circle -->
+  <circle cx="100" cy="100" r="90" fill="none" stroke="url(#goldGradient)" stroke-width="5" filter="url(#glow)"/>
+
+  <!-- Inner Circle Background -->
+  <circle cx="100" cy="100" r="75" fill="#0a0a0a" stroke="url(#goldGradient)" stroke-width="2"/>
+
+  <!-- Film Reel Spokes -->
+  <g stroke="url(#goldGradient)" stroke-width="4" stroke-linecap="round" opacity="0.9">
+    <line x1="100" y1="100" x2="100" y2="35" />
+    <line x1="100" y1="100" x2="146" y2="54" />
+    <line x1="100" y1="100" x2="165" y2="100" />
+    <line x1="100" y1="100" x2="146" y2="146" />
+    <line x1="100" y1="100" x2="100" y2="165" />
+    <line x1="100" y1="100" x2="54" y2="146" />
+    <line x1="100" y1="100" x2="35" y2="100" />
+    <line x1="100" y1="100" x2="54" y2="54" />
+  </g>
+
+  <!-- Film Reel Holes (decorative circles) -->
+  <g fill="#1a1a1a" stroke="url(#goldGradient)" stroke-width="1.5">
+    <circle cx="100" cy="35" r="8" />
+    <circle cx="146" cy="54" r="8" />
+    <circle cx="165" cy="100" r="8" />
+    <circle cx="146" cy="146" r="8" />
+    <circle cx="100" cy="165" r="8" />
+    <circle cx="54" cy="146" r="8" />
+    <circle cx="35" cy="100" r="8" />
+    <circle cx="54" cy="54" r="8" />
+  </g>
+
+  <!-- Center Hub -->
+  <circle cx="100" cy="100" r="30" fill="url(#centerGlow)" filter="url(#glow)"/>
+  <circle cx="100" cy="100" r="22" fill="#0a0a0a" stroke="url(#goldGradient)" stroke-width="2"/>
+
+  <!-- Stylized "C" in Center for CineMax -->
+  <path d="M 115 90 A 18 18 0 1 0 115 110" fill="none" stroke="url(#goldGradient)" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Film Strip Decoration at Bottom -->
+  <rect x="25" y="175" width="150" height="20" fill="url(#goldGradient)" rx="3" filter="url(#glow)"/>
+  <g fill="#0a0a0a">
+    <rect x="30" y="177" width="7" height="16" />
+    <rect x="42" y="177" width="7" height="16" />
+    <rect x="54" y="177" width="7" height="16" />
+    <rect x="66" y="177" width="7" height="16" />
+    <rect x="78" y="177" width="7" height="16" />
+    <rect x="90" y="177" width="7" height="16" />
+    <rect x="102" y="177" width="7" height="16" />
+    <rect x="114" y="177" width="7" height="16" />
+    <rect x="126" y="177" width="7" height="16" />
+    <rect x="138" y="177" width="7" height="16" />
+    <rect x="150" y="177" width="7" height="16" />
+    <rect x="162" y="177" width="7" height="16" />
+  </g>
+
+  <!-- CINEMAX Text -->
+  <text x="100" y="20" font-family="Montserrat, Arial, sans-serif" font-size="16" font-weight="700" fill="url(#goldGradient)" text-anchor="middle" letter-spacing="1">CINEMAX</text>
+</svg>
