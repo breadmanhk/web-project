@@ -70,7 +70,15 @@ INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
 INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
 ('Where The Wind Blows', 'Drama', '2 HR 24 MIN', 'III', 'The film is however set firmly in the past ranging from the 1920s to the 1980s and inspired by the “Four Great Sergeants” of post-war Hong Kong who amassed great personal wealth while working as police officers.');
 INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
-('Zero Today', 'Drame', '2 HR 25 MIN', 'III', 'X Zero');
+('Now You See Me3', 'Crime Thriller', '1 HR 52 MIN', 'IIA', 'A diamond heist reunites retired Horsemen illusionists with new performers Greenblatt, Smith and Sessa as they target dangerous criminals.');
+INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
+('Demon Slayer Kimetsu no Yaiba Infinity Castle', 'Animation', '2 HR 35 MIN', 'IIA', 'The Demon Slayer Corps are drawn into the Infinity Castle, where Tanjiro and the Hashira face terrifying Upper Rank demons in a desperate fight as the final battle against Muzan Kibutsuji begins.');
+INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
+('Doraemon the Movie Nobita s Art World Tales', 'Animation', '1 HR 45 MIN', 'I', 'Set in the magnificent world of medieval Europe depicted in paintings. Doraemon and his friends jump into the "world of the painting" joined by Claire and her friends Milo and Chai as they emabark on a great adventure!.');
+INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
+('F1 The Movie', 'Sports', '2 HR 36 MIN', 'IIA', 'A Formula One driver comes out of retirement to mentor and team up with a younger driver.');
+INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
+('InitialD', 'Action', '2 HR 10 MIN', 'IIA', 'After winning his first competition, Takumi focuses his attention on drift racing, a sport he has unknowingly perfected while delivering tofu in his fathers Toyota AE86.');
 
 
 -- Insert sample seat data for multiple halls
