@@ -13,11 +13,11 @@
     const CarouselConfig = {
         animationDuration: 500,
         cardWidths: {
-            mobile: 220,
-            tablet: 250,
-            desktop: 280
+            mobile: 200,
+            tablet: 220,
+            desktop: 240
         },
-        gap: 40,
+        gap: 30,
         breakpoints: {
             mobile: 768,
             tablet: 1024

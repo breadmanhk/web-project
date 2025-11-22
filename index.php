@@ -77,7 +77,12 @@ $conn->close();
                         <?php if (count($movies) > 0): ?>
                             <?php foreach ($movies as $movie): ?>
                                 <!-- Movie Card -->
-                                <div class="movie-card">
+                                <div class="movie-card"
+                                     data-title="<?php echo htmlspecialchars($movie['movie_title']); ?>"
+                                     data-description="<?php echo htmlspecialchars($movie['description']); ?>"
+                                     data-duration="<?php echo htmlspecialchars($movie['duration']); ?>"
+                                     data-rating="<?php echo htmlspecialchars($movie['rating']); ?>"
+                                     data-genre="<?php echo htmlspecialchars($movie['genre']); ?>">
                                     <?php
                                     // Generate poster image filename from movie title
                                     $posterFile = 'assets/images/' . str_replace(' ', '_', $movie['movie_title']) . '.jpg';
@@ -97,7 +102,8 @@ $conn->close();
                                             <span>| <?php echo htmlspecialchars($movie['rating']); ?></span>
                                         </div>
                                         <span class="genre-tag"><?php echo htmlspecialchars($movie['genre']); ?></span>
-                                        <p style="color: #999; font-size: 13px;">Released November 7, 2025</p>
+                                        <p style="color: #999; font-size: 13px;">Released November, 2025</p>
+                                        <p class="movie-description"><?php echo htmlspecialchars($movie['description']); ?></p>
                                         <a href="login.html" class="get-tickets-btn">Get Tickets</a>
                                     </div>
                                 </div>

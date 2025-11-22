@@ -54,6 +54,7 @@ CREATE TABLE reservations (
     hall_name VARCHAR(50) NOT NULL,
     reservation_date DATE NOT NULL,
     time_slot VARCHAR(50) NOT NULL,
+    status ENUM('active', 'cancelled', 'completed') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (movie_id) REFERENCES movies(movie_id),
     FOREIGN KEY (seat_id) REFERENCES seats(seat_id)
@@ -62,6 +63,14 @@ CREATE TABLE reservations (
 -- Insert movie data
 INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
 ('Warriors of Future', 'Sci-Fi', '1 HR 40 MIN', 'IIB', 'In 2055, a meteorite strikes Earth and brings with it a mysterious plant species that threatens humanity.');
+INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
+('Table For Six', 'Comedy', '1 HR 59 MIN', 'IIA', 'A family reunion dinner turns awkward when Bernard arrives with his new girlfriend, who happens to be big brother Steve old flame.');
+INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
+('The Sparring Partner', 'thriller', '2 HR 18 MIN', 'III', 'The intricate story begins when a young man partners with his friend to murder and dismember his parents.');
+INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
+('Where The Wind Blows', 'Drama', '2 HR 24 MIN', 'III', 'The film is however set firmly in the past ranging from the 1920s to the 1980s and inspired by the “Four Great Sergeants” of post-war Hong Kong who amassed great personal wealth while working as police officers.');
+
+
 
 -- Insert sample seat data for multiple halls
 -- Hall 1: Premium Hall (30 seats)

@@ -62,23 +62,22 @@ if (isset($_POST['searchSeats']) && isset($_POST['movieId']) && isset($_POST['re
         }
     }
 
-    // Get all seats
+    // Get all seats and check their availability status
     $seatsSql = "SELECT seat_id, hall_name, seat_number, seat_type, description FROM seats ORDER BY hall_name, seat_number";
     $seatsResult = $conn->query($seatsSql);
 
     if ($seatsResult->num_rows > 0) {
         while ($row = $seatsResult->fetch_assoc()) {
-            // Check if this seat is already reserved for the selected movie, date and time
-            $checkSql = "SELECT reservation_id FROM reservations WHERE movie_id = ? AND seat_id = ? AND reservation_date = ? AND time_slot = ?";
+            // Check if this seat is already reserved (status='active') for the selected movie, date and time
+            $checkSql = "SELECT reservation_id FROM reservations WHERE movie_id = ? AND seat_id = ? AND reservation_date = ? AND time_slot = ? AND status = 'active'";
             $checkStmt = $conn->prepare($checkSql);
             $checkStmt->bind_param("iiss", $selectedMovieId, $row['seat_id'], $selectedDate, $selectedTime);
             $checkStmt->execute();
             $checkResult = $checkStmt->get_result();
 
-            // If not reserved, add to available seats
-            if ($checkResult->num_rows == 0) {
-                $availableSeats[] = $row;
-            }
+            // Add availability status to the seat data
+            $row['is_booked'] = ($checkResult->num_rows > 0);
+            $availableSeats[] = $row; // Now includes ALL seats (booked and available)
 
             $checkStmt->close();
         }
@@ -174,29 +173,101 @@ $conn->close();
                     <input type="hidden" name="reservationDate" value="<?php echo htmlspecialchars($selectedDate); ?>" />
                     <input type="hidden" name="timeSlot" value="<?php echo htmlspecialchars($selectedTime); ?>" />
 
-                    <?php if (count($availableSeats) > 0): ?>
+                    <?php if (count($availableSeats) > 0):
+                        // Count available vs booked seats
+                        $totalSeats = count($availableSeats);
+                        $bookedSeats = 0;
+                        foreach ($availableSeats as $seat) {
+                            if ($seat['is_booked']) {
+                                $bookedSeats++;
+                            }
+                        }
+                        $availableCount = $totalSeats - $bookedSeats;
+                    ?>
                         <div class="hero-banner">
                             <p><strong>Movie:</strong> <?php echo htmlspecialchars($selectedMovieTitle); ?></p>
                             <p><strong>Date:</strong> <?php echo htmlspecialchars($selectedDate); ?> |
                                <strong>Time:</strong> <?php echo htmlspecialchars($selectedTime); ?></p>
-                            <p class="price-tag"><strong><?php echo count($availableSeats); ?></strong> seats available</p>
+                            <p class="price-tag"><strong><?php echo $availableCount; ?></strong> available / <strong><?php echo $totalSeats; ?></strong> total seats</p>
                         </div>
 
-                        <p style="text-align: center; color: #d4af37; margin: 20px 0;">Click on a seat to select it</p>
+                        <!-- Cinema Screen Indicator -->
+                        <div class="cinema-screen">
+                            <div class="screen-bar">SCREEN</div>
+                        </div>
 
-                        <div class="seat-grid">
-                            <?php foreach ($availableSeats as $seat): ?>
-                                <div class="seat-card"
-                                     data-seat-id="<?php echo $seat['seat_id']; ?>"
-                                     data-seat-number="<?php echo htmlspecialchars($seat['seat_number']); ?>"
-                                     data-hall-name="<?php echo htmlspecialchars($seat['hall_name']); ?>">
-                                    <h4><?php echo htmlspecialchars($seat['hall_name']) . ' - ' . htmlspecialchars($seat['seat_number']); ?></h4>
-                                    <span class="seat-type <?php echo ($seat['seat_type'] == 'VIP') ? 'vip-badge' : ''; ?>">
-                                        <?php echo htmlspecialchars($seat['seat_type']); ?>
-                                    </span>
-                                    <p><?php echo htmlspecialchars($seat['description']); ?></p>
+                        <div style="text-align: center; margin: 30px auto; max-width: 700px;">
+                            <div style="display: inline-flex; gap: 20px; align-items: center; flex-wrap: wrap; justify-content: center;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%); border: 3px solid #2ecc71; border-radius: 8px;"></div>
+                                    <span style="color: #ccc;">Available</span>
                                 </div>
-                            <?php endforeach; ?>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #9b59b6 0%, #8e44ad 100%); border: 3px solid #9b59b6; border-radius: 8px;"></div>
+                                    <span style="color: #ccc;">VIP</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #ff8c00 0%, #ff6600 100%); border: 3px solid #ff8c00; border-radius: 8px; box-shadow: 0 0 10px rgba(255, 140, 0, 0.6);"></div>
+                                    <span style="color: #ff8c00; font-weight: 600;">Selected</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #555 0%, #333 100%); border: 3px solid #666; border-radius: 8px; opacity: 0.6;"></div>
+                                    <span style="color: #999;">Occupied</span>
+                                </div>
+                            </div>
+                            <p style="color: #d4af37; margin-top: 15px; font-size: 14px;">💡 Click on any available seat to select it</p>
+                        </div>
+
+                        <!-- Organize seats by hall and create cinema layout -->
+                        <?php
+                        // Group seats by hall
+                        $seatsByHall = [];
+                        foreach ($availableSeats as $seat) {
+                            $seatsByHall[$seat['hall_name']][] = $seat;
+                        }
+
+                        foreach ($seatsByHall as $hallName => $hallSeats):
+                        ?>
+                            <div class="hall-section">
+                                <h3 style="color: #d4af37; text-align: center; margin: 30px 0 20px 0;">
+                                    <?php echo htmlspecialchars($hallName); ?>
+                                </h3>
+
+                                <div class="cinema-seat-grid">
+                                    <?php foreach ($hallSeats as $seat):
+                                        $isBooked = $seat['is_booked'];
+                                        $seatClass = ($seat['seat_type'] == 'VIP') ? 'vip-seat' : 'standard-seat';
+                                        if ($isBooked) {
+                                            $seatClass .= ' booked-seat';
+                                        }
+                                        $titleText = htmlspecialchars($seat['hall_name']) . ' - Seat ' . htmlspecialchars($seat['seat_number']) . ' (' . htmlspecialchars($seat['seat_type']) . ')';
+                                        if ($isBooked) {
+                                            $titleText .= ' - OCCUPIED';
+                                        }
+                                    ?>
+                                        <div class="cinema-seat <?php echo $seatClass; ?>"
+                                             data-seat-id="<?php echo $seat['seat_id']; ?>"
+                                             data-seat-number="<?php echo htmlspecialchars($seat['seat_number']); ?>"
+                                             data-hall-name="<?php echo htmlspecialchars($seat['hall_name']); ?>"
+                                             data-seat-type="<?php echo htmlspecialchars($seat['seat_type']); ?>"
+                                             data-description="<?php echo htmlspecialchars($seat['description']); ?>"
+                                             data-is-booked="<?php echo $isBooked ? 'true' : 'false'; ?>"
+                                             title="<?php echo $titleText; ?>">
+                                            <div class="seat-icon"><?php echo $isBooked ? '🚫' : '💺'; ?></div>
+                                            <div class="seat-label"><?php echo htmlspecialchars($seat['seat_number']); ?></div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+
+                        <!-- Selected Seat Info Box -->
+                        <div id="seat-info-box" style="display: none;" class="seat-info-card">
+                            <h4>Selected Seat Information</h4>
+                            <p><strong>Hall:</strong> <span id="info-hall"></span></p>
+                            <p><strong>Seat:</strong> <span id="info-seat"></span></p>
+                            <p><strong>Type:</strong> <span id="info-type"></span></p>
+                            <p><strong>Details:</strong> <span id="info-desc"></span></p>
                         </div>
 
                         <input type="hidden" id="selectedSeatId" name="seatId" value="" />
@@ -248,23 +319,40 @@ $conn->close();
                 window.location.href = '../../index.php';
             });
 
-            // Seat card click handler
-            $('.seat-card').on('click', function() {
-                // Remove selection from other cards
-                $('.seat-card').removeClass('selected');
+            // Cinema seat click handler
+            $('.cinema-seat').on('click', function() {
+                // Check if seat is already booked
+                var isBooked = $(this).data('is-booked');
+                if (isBooked === 'true' || $(this).hasClass('booked-seat')) {
+                    // Show alert for occupied seat
+                    alert('This seat is already occupied. Please select another seat.');
+                    return; // Stop execution
+                }
 
-                // Add selection to clicked card
+                // Remove selection from other seats
+                $('.cinema-seat').removeClass('selected');
+
+                // Add selection to clicked seat
                 $(this).addClass('selected');
 
                 // Get seat information
                 selectedSeatId = $(this).data('seat-id');
                 selectedSeatNumber = $(this).data('seat-number');
                 selectedHallName = $(this).data('hall-name');
+                var seatType = $(this).data('seat-type');
+                var seatDescription = $(this).data('description');
 
                 // Update hidden form fields
                 $('#selectedSeatId').val(selectedSeatId);
                 $('#selectedSeatNumber').val(selectedSeatNumber);
                 $('#selectedHallName').val(selectedHallName);
+
+                // Update seat info box
+                $('#info-hall').text(selectedHallName);
+                $('#info-seat').text(selectedSeatNumber);
+                $('#info-type').text(seatType);
+                $('#info-desc').text(seatDescription);
+                $('#seat-info-box').fadeIn();
 
                 // Display selection message
                 $('#selectedSeatDisplay').text(selectedHallName + ' - Seat ' + selectedSeatNumber);
@@ -272,15 +360,21 @@ $conn->close();
 
                 // Enable reserve button
                 $('#reserveBtn').prop('disabled', false);
+
+                // Smooth scroll to seat info
+                $('html, body').animate({
+                    scrollTop: $('#seat-info-box').offset().top - 100
+                }, 500);
             });
 
             // Clear selection button
             $('#clearSelectionBtn').on('click', function() {
-                $('.seat-card').removeClass('selected');
+                $('.cinema-seat').removeClass('selected');
                 $('#selectedSeatId').val('');
                 $('#selectedSeatNumber').val('');
                 $('#selectedHallName').val('');
                 $('#selectionMessage').fadeOut();
+                $('#seat-info-box').fadeOut();
                 $('#reserveBtn').prop('disabled', true);
             });
 

@@ -74,8 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Get database connection
         $conn = getDBConnection();
 
-        // Check if seat is still available
-        $checkSql = "SELECT reservation_id FROM reservations WHERE movie_id = ? AND seat_id = ? AND reservation_date = ? AND time_slot = ?";
+        // Check if seat is still available (only check active reservations)
+        $checkSql = "SELECT reservation_id FROM reservations WHERE movie_id = ? AND seat_id = ? AND reservation_date = ? AND time_slot = ? AND status = 'active'";
         $checkStmt = $conn->prepare($checkSql);
         $checkStmt->bind_param("iiss", $movieId, $seatId, $reservationDate, $timeSlot);
         $checkStmt->execute();
@@ -85,9 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $errorMessage = 'Sorry, this seat has already been reserved for the selected movie and time';
             $isValid = false;
         } else {
-            // Insert reservation into database
-            $insertSql = "INSERT INTO reservations (member_email, movie_id, movie_title, seat_id, seat_number, hall_name, reservation_date, time_slot)
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            // Insert reservation into database with active status
+            $insertSql = "INSERT INTO reservations (member_email, movie_id, movie_title, seat_id, seat_number, hall_name, reservation_date, time_slot, status)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')";
             $insertStmt = $conn->prepare($insertSql);
             $insertStmt->bind_param("sisissss", $userEmail, $movieId, $movieTitle, $seatId, $seatNumber, $hallName, $reservationDate, $timeSlot);
 
@@ -172,10 +172,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <p><?php echo htmlspecialchars($errorMessage); ?></p>
             </div>
 
-            <nav style="text-align: center; margin-top: 20px;">
+            <div class="btn-group">
                 <a href="../../includes/booking/reservation.php" class="btn btn-primary">Try Again</a>
                 <a href="../../index.php" class="btn btn-secondary">Back to Home</a>
-            </nav>
+            </div>
         </main>
 
         <footer>
