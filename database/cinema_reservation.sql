@@ -69,7 +69,8 @@ INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
 ('The Sparring Partner', 'thriller', '2 HR 18 MIN', 'III', 'The intricate story begins when a young man partners with his friend to murder and dismember his parents.');
 INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
 ('Where The Wind Blows', 'Drama', '2 HR 24 MIN', 'III', 'The film is however set firmly in the past ranging from the 1920s to the 1980s and inspired by the “Four Great Sergeants” of post-war Hong Kong who amassed great personal wealth while working as police officers.');
-
+INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
+(5, 'Zero Today', 'Drame', '2 HR 25 MIN', 'III', 'X Zero');
 
 
 -- Insert sample seat data for multiple halls
