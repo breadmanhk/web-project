@@ -45,10 +45,12 @@ $conn->close();
     <!-- Header Navigation -->
     <header>
         <div class="header-content">
-            <div class="logo-container">
-                <img src="assets/images/logo.svg" alt="CineMax Theatre Logo" class="logo" />
-                <h1>CINEMAX</h1>
-            </div>
+            <a href="index.php" style="text-decoration: none;">
+                <div class="logo-container">
+                    <img src="assets/images/logo.svg" alt="CineMax Theatre Logo" class="logo" />
+                    <h1>CINEMAX</h1>
+                </div>
+            </a>
             <nav>
                 <a href="register.html">Register</a>
                 <a href="login.html">Sign In</a>

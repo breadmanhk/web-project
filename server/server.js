@@ -194,10 +194,12 @@ app.post('/thankyou', (req, res) => {
 <body>
     <header>
         <div class="header-content">
-            <div class="logo-container">
-                <img src="http://localhost/web-project/assets/images/logo.svg" alt="CineMax Theatre Logo" class="logo" />
-                <h1>CineMax Theatre</h1>
-            </div>
+            <a href="http://localhost/web-project/" style="text-decoration: none;">
+                <div class="logo-container">
+                    <img src="http://localhost/web-project/assets/images/logo.svg" alt="CineMax Theatre Logo" class="logo" />
+                    <h1>CineMax</h1>
+                </div>
+            </a>   
         </div>
     </header>
 
