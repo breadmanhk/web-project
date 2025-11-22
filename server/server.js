@@ -195,7 +195,7 @@ app.post('/thankyou', (req, res) => {
     <header>
         <div class="header-content">
             <div class="logo-container">
-                <img src="http://localhost/web%20project/assets/images/logo.svg" alt="CineMax Theatre Logo" class="logo" />
+                <img src="http://localhost/web-project/assets/images/logo.svg" alt="CineMax Theatre Logo" class="logo" />
                 <h1>CineMax Theatre</h1>
             </div>
         </div>
@@ -259,7 +259,7 @@ app.post('/thankyou', (req, res) => {
             </div>
 
             <nav style="text-align: center; margin-top: 30px;">
-                <button onclick="window.location.href='http://localhost/web%20project/index.php'" class="btn btn-primary">OK</button>
+                <button onclick="window.location.href='http://localhost/web-project/index.php'" class="btn btn-primary">OK</button>
             </nav>
         </main>
 
