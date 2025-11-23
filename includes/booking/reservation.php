@@ -24,6 +24,7 @@ $selectedMovieId = '';
 $selectedMovieTitle = '';
 $selectedDate = '';
 $selectedTime = '';
+$selectedMoviePoster = ''; // ADDED: Variable for poster path
 $availableSeats = array();
 $showSeats = false;
 
@@ -49,10 +50,26 @@ if (isset($_POST['searchSeats']) && isset($_POST['movieId']) && isset($_POST['re
     $selectedDate = $_POST['reservationDate'];
     $selectedTime = $_POST['timeSlot'];
 
-    // Get selected movie title
+    // Get selected movie title and poster path
     foreach ($movies as $movie) {
         if ($movie['movie_id'] == $selectedMovieId) {
             $selectedMovieTitle = $movie['movie_title'];
+            
+            // NEW LOGIC: Determine the poster file path
+            // Assumes images are in the path: ../../assets/images/ (relative to includes/booking/reservation.php)
+            $posterFileName = str_replace(' ', '_', $movie['movie_title']) . '.jpg';
+            $posterPath = '../../assets/images/' . $posterFileName;
+            
+            // Check if poster image exists
+            if (file_exists($posterPath)) {
+                $selectedMoviePoster = $posterPath;
+            } else {
+                // Option: Use a placeholder if the specific image is not found
+                // If you have a placeholder image like placeholder.svg, use it here:
+                // $selectedMoviePoster = '../../assets/images/placeholder.svg';
+                $selectedMoviePoster = ''; // Keep it empty if no image is found
+            }
+            
             break;
         }
     }
@@ -189,11 +206,18 @@ $conn->close();
                         }
                         $availableCount = $totalSeats - $bookedSeats;
                     ?>
-                        <div class="hero-banner">
-                            <p><strong>Movie:</strong> <?php echo htmlspecialchars($selectedMovieTitle); ?></p>
-                            <p><strong>Date:</strong> <?php echo htmlspecialchars($selectedDate); ?> |
-                               <strong>Time:</strong> <?php echo htmlspecialchars($selectedTime); ?></p>
-                            <p class="price-tag"><strong><?php echo $availableCount; ?></strong> available / <strong><?php echo $totalSeats; ?></strong> total seats</p>
+                        <div class="hero-banner" style="display: flex; align-items: center; gap: 30px;">
+                            <?php if (!empty($selectedMoviePoster)): ?>
+                            <img src="<?php echo htmlspecialchars($selectedMoviePoster); ?>" 
+                                 alt="<?php echo htmlspecialchars($selectedMovieTitle); ?> Poster" 
+                                 style="width: 100px; height: 150px; object-fit: cover; border-radius: 6px; border: 2px solid #d4af37;">
+                            <?php endif; ?>
+                            
+                            <div> <p><strong>Movie:</strong> <?php echo htmlspecialchars($selectedMovieTitle); ?></p>
+                                <p><strong>Date:</strong> <?php echo htmlspecialchars($selectedDate); ?> |
+                                   <strong>Time:</strong> <?php echo htmlspecialchars($selectedTime); ?></p>
+                                <p class="price-tag"><strong><?php echo $availableCount; ?></strong> available / <strong><?php echo $totalSeats; ?></strong> total seats</p>
+                            </div>
                         </div>
 
                         <div class="cinema-screen">

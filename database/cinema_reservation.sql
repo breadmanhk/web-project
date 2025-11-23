@@ -157,21 +157,21 @@ INSERT INTO seats (hall_name, seat_number, seat_type, description) VALUES
 ('Hall 3', 'A2', 'IMAX', 'IMAX premium front row'),
 ('Hall 3', 'A3', 'IMAX', 'IMAX premium front row'),
 ('Hall 3', 'A4', 'IMAX', 'IMAX premium front row'),
+('Hall 3', 'A5', 'IMAX', 'IMAX premium front row'),
 ('Hall 3', 'B1', 'IMAX', 'IMAX center position'),
 ('Hall 3', 'B2', 'IMAX', 'IMAX center position'),
 ('Hall 3', 'B3', 'IMAX', 'IMAX center position'),
 ('Hall 3', 'B4', 'IMAX', 'IMAX center position'),
+('Hall 3', 'B5', 'IMAX', 'IMAX center position'),
 ('Hall 3', 'C1', 'IMAX', 'IMAX optimal viewing'),
 ('Hall 3', 'C2', 'IMAX', 'IMAX optimal viewing'),
 ('Hall 3', 'C3', 'IMAX', 'IMAX optimal viewing'),
 ('Hall 3', 'C4', 'IMAX', 'IMAX optimal viewing'),
+('Hall 3', 'C5', 'IMAX', 'IMAX optimal viewing'),
 ('Hall 3', 'D1', 'IMAX', 'IMAX luxury seating'),
 ('Hall 3', 'D2', 'IMAX', 'IMAX luxury seating'),
 ('Hall 3', 'D3', 'IMAX', 'IMAX luxury seating'),
 ('Hall 3', 'D4', 'IMAX', 'IMAX luxury seating'),
-('Hall 3', 'E1', 'IMAX', 'IMAX back row premium'),
-('Hall 3', 'E2', 'IMAX', 'IMAX back row premium'),
-('Hall 3', 'E3', 'IMAX', 'IMAX back row premium'),
-('Hall 3', 'E4', 'IMAX', 'IMAX back row premium');
+('Hall 3', 'D5', 'IMAX', 'IMAX luxury seating');
 
 -- Members will be added through the registration form
