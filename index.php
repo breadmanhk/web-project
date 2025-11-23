@@ -86,7 +86,7 @@ $conn->close();
                                      data-rating="<?php echo htmlspecialchars($movie['rating']); ?>"
                                      data-genre="<?php echo htmlspecialchars($movie['genre']); ?>">
                                     <?php
-                                    // Generate poster image filename from movie title
+                                    // Generate poster image filename from movie title, follow rules and added by Jacky
                                     $posterFile = 'assets/images/' . str_replace(' ', '_', $movie['movie_title']) . '.jpg';
 
                                     // Check if poster image exists

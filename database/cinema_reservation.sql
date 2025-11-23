@@ -2,11 +2,11 @@
 -- MySQL Database Schema for CineMax Theatre Reservation System
 -- Create database and tables for the cinema seat reservation system
 
--- Create database
+-- Create database and Images, Jacky
 CREATE DATABASE IF NOT EXISTS cinema_reservation;
 USE cinema_reservation;
 
--- Drop existing tables (in reverse order due to foreign key constraints)
+-- Drop existing tables (in reverse order due to foreign key constraints) , Jacky
 DROP TABLE IF EXISTS reservations;
 DROP TABLE IF EXISTS seats;
 DROP TABLE IF EXISTS movies;
@@ -59,11 +59,11 @@ CREATE TABLE reservations (
     FOREIGN KEY (movie_id) REFERENCES movies(movie_id),
     FOREIGN KEY (seat_id) REFERENCES seats(seat_id)
 );
--- Insert member data
+-- Insert member data, Jacky
 INSERT INTO members (first_name, last_name, mailing_address, contact_phone, email, password) VALUES
 ('test', 'test', 'test','12345678','test@test.com','$2y$10$b9tUsaircu29XuPcJ4tmVu06vuJkP0xB3etHoD96XtHCcVvMsOJA6');
 
--- Insert movie data
+-- Insert movie data, Jacky
 INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
 ('Warriors of Future', 'Sci-Fi', '1 HR 40 MIN', 'IIB', 'In 2055, a meteorite strikes Earth and brings with it a mysterious plant species that threatens humanity.');
 INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES
