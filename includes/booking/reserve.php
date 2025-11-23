@@ -1,8 +1,8 @@
 <?php
 /**
  * SEHS4517 Web Application Development and Management
- * Reserve Seat PHP Script
- * Processes seat reservation, stores in MySQL, and forwards to Node.js Express server
+ * Reserve Seat PHP Script (Multi-Seat Version)
+ * Processes multiple seat reservations, stores in MySQL, and forwards to Node.js
  */
 
 // Start session
@@ -23,86 +23,147 @@ $userEmail = $_SESSION['email'];
 // Initialize variables
 $movieId = '';
 $movieTitle = '';
-$seatId = '';
-$seatNumber = '';
 $hallName = '';
 $reservationDate = '';
 $timeSlot = '';
 $errorMessage = '';
 $success = false;
 
+// RULE 1: Set maximum tickets allowed per transaction (Server-side constraint)
+$MAX_TICKETS = 4;
+
 // Check if form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Get form data and sanitize
+    // Get basic form data
     $movieId = intval($_POST['movieId']);
     $movieTitle = trim($_POST['movieTitle']);
-    $seatId = intval($_POST['seatId']);
-    $seatNumber = trim($_POST['seatNumber']);
-    $hallName = trim($_POST['hallName']);
     $reservationDate = trim($_POST['reservationDate']);
     $timeSlot = trim($_POST['timeSlot']);
+    
+    // Receive JSON string for multiple seats and decode it
+    $selectedSeatsData = isset($_POST['selectedSeatsData']) ? $_POST['selectedSeatsData'] : '[]';
+    $selectedSeats = json_decode($selectedSeatsData, true); // Convert to PHP Array
 
     // Server-side validation
     $isValid = true;
 
-    // Validate movie selection
     if (empty($movieId)) {
         $errorMessage = 'Movie selection is required';
         $isValid = false;
     }
 
-    // Validate date
     if (empty($reservationDate) && $isValid) {
         $errorMessage = 'Reservation date is required';
         $isValid = false;
     }
 
-    // Validate time slot
     if (empty($timeSlot) && $isValid) {
         $errorMessage = 'Time slot is required';
         $isValid = false;
     }
 
-    // Validate seat selection
-    if (empty($seatId) && $isValid) {
-        $errorMessage = 'Please select a seat';
+    // Check if at least one seat is selected
+    if ((!is_array($selectedSeats) || count($selectedSeats) === 0) && $isValid) {
+        $errorMessage = 'Please select at least one seat';
         $isValid = false;
     }
+
+    // RULE 1 Check: Enforce maximum ticket limit
+    if (count($selectedSeats) > $MAX_TICKETS && $isValid) {
+        $errorMessage = 'You can only reserve a maximum of ' . $MAX_TICKETS . ' tickets per transaction.';
+        $isValid = false;
+    }
+
+    // RULE 2 Check: Enforce single-hall rule
+    if ($isValid) {
+        $firstHallName = null;
+        foreach ($selectedSeats as $seat) {
+            if ($firstHallName === null) {
+                // Store the hall name of the first selected seat
+                $firstHallName = $seat['hall'];
+            } else if ($seat['hall'] !== $firstHallName) {
+                // If any subsequent seat is in a different hall, validation fails
+                $errorMessage = 'All selected seats must be in the same hall. Tickets span different halls: ' . htmlspecialchars($firstHallName) . ' vs ' . htmlspecialchars($seat['hall']);
+                $isValid = false;
+                break; // Exit loop immediately if a conflict is found
+            }
+        }
+    }
+
 
     // If validation passes, process reservation
     if ($isValid) {
         // Get database connection
         $conn = getDBConnection();
-
-        // Check if seat is still available (only check active reservations)
-        $checkSql = "SELECT reservation_id FROM reservations WHERE movie_id = ? AND seat_id = ? AND reservation_date = ? AND time_slot = ? AND status = 'active'";
+        
+        // STEP 1: Race Condition Check
+        // Check if ANY of the selected seats have been taken by someone else just now
+        $alreadyReservedSeats = [];
+        
+        $checkSql = "SELECT seat_number FROM reservations WHERE movie_id = ? AND seat_id = ? AND reservation_date = ? AND time_slot = ? AND status = 'active'";
         $checkStmt = $conn->prepare($checkSql);
-        $checkStmt->bind_param("iiss", $movieId, $seatId, $reservationDate, $timeSlot);
-        $checkStmt->execute();
-        $checkResult = $checkStmt->get_result();
 
-        if ($checkResult->num_rows > 0) {
-            $errorMessage = 'Sorry, this seat has already been reserved for the selected movie and time';
+        foreach ($selectedSeats as $seat) {
+            $currentSeatId = intval($seat['id']);
+            $checkStmt->bind_param("iiss", $movieId, $currentSeatId, $reservationDate, $timeSlot);
+            $checkStmt->execute();
+            $result = $checkStmt->get_result();
+            
+            if ($result->num_rows > 0) {
+                // If found, this seat is already taken
+                $alreadyReservedSeats[] = $seat['number'];
+            }
+        }
+        $checkStmt->close();
+
+        if (count($alreadyReservedSeats) > 0) {
+            // If any seats were taken, block the whole transaction
+            $errorMessage = 'Error: The following seats have just been booked by someone else: ' . implode(', ', $alreadyReservedSeats);
             $isValid = false;
         } else {
-            // Insert reservation into database with active status
-            $insertSql = "INSERT INTO reservations (member_email, movie_id, movie_title, seat_id, seat_number, hall_name, reservation_date, time_slot, status)
+            // STEP 2: Insert reservations into database
+            $insertSql = "INSERT INTO reservations (member_email, movie_id, movie_title, seat_id, seat_number, hall_name, reservation_date, time_slot, status) 
                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')";
             $insertStmt = $conn->prepare($insertSql);
-            $insertStmt->bind_param("sisissss", $userEmail, $movieId, $movieTitle, $seatId, $seatNumber, $hallName, $reservationDate, $timeSlot);
+            
+            // Arrays to collect data for Node.js response
+            $allSeatNumbers = [];
+            $finalHallName = ''; // Capture one hall name for the receipt
+            $allInserted = true;
 
-            if ($insertStmt->execute()) {
+            // Loop through each selected seat and insert record
+            foreach ($selectedSeats as $seat) {
+                $currentSeatId = intval($seat['id']);
+                $currentSeatNum = $seat['number'];
+                $currentHall = $seat['hall'];
+                
+                $finalHallName = $currentHall; 
+                $allSeatNumbers[] = $currentSeatNum;
+
+                $insertStmt->bind_param("sisissss", $userEmail, $movieId, $movieTitle, $currentSeatId, $currentSeatNum, $currentHall, $reservationDate, $timeSlot);
+                
+                if (!$insertStmt->execute()) {
+                    $allInserted = false;
+                    // Note: In a production environment, transaction rollback should be implemented here
+                }
+            }
+            $insertStmt->close();
+
+            if ($allInserted) {
                 $success = true;
 
-                // Send data to Node.js Express server
+                // STEP 3: Send data to Node.js Express server
+                // Combine all seat numbers into a string (e.g., "A1, A2, B5")
+                $seatNumberString = implode(', ', $allSeatNumbers);
+
                 $nodeServerUrl = 'http://localhost:3000/thankyou';
 
-                // Prepare data to send
+                // Prepare data payload
                 $postData = array(
                     'email' => $userEmail,
                     'movieTitle' => $movieTitle,
-                    'seatNumber' => $seatNumber,
-                    'hallName' => $hallName,
+                    'seatNumber' => $seatNumberString, // Node.js will display this combined string
+                    'hallName' => $finalHallName,
                     'reservationDate' => $reservationDate,
                     'timeSlot' => $timeSlot
                 );
@@ -125,18 +186,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     echo $response;
                     exit();
                 } else {
-                    // If Node.js server is not available, display error
                     $errorMessage = 'Reservation saved but unable to connect to confirmation server. Please contact support.';
                     $success = false;
                 }
             } else {
-                $errorMessage = 'Failed to save reservation. Please try again.';
+                $errorMessage = 'Failed to save some reservations. Please contact support.';
             }
-
-            $insertStmt->close();
         }
-
-        $checkStmt->close();
         $conn->close();
     }
 }

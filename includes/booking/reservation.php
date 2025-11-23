@@ -1,24 +1,20 @@
 <?php
 /**
  * SEHS4517 Web Application Development and Management
- * Cinema Seat Reservation Page PHP Script
- * Allows logged-in members to reserve cinema seats for movies
+ * Cinema Seat Reservation Page PHP Script (Multi-Seat Version)
+ * Allows logged-in members to reserve MULTIPLE cinema seats
  */
 
-// Start session
 session_start();
 
 // Check if user is logged in
 if (!isset($_SESSION['member_id']) || !isset($_SESSION['email'])) {
-    // Redirect to login page if not logged in
     header('Location: login.html');
     exit();
 }
 
-// Include database configuration
 require_once '../config.php';
 
-// Get user information from session
 $userEmail = $_SESSION['email'];
 $firstName = $_SESSION['first_name'];
 $lastName = $_SESSION['last_name'];
@@ -31,7 +27,6 @@ $selectedTime = '';
 $availableSeats = array();
 $showSeats = false;
 
-// Time slots available for cinema
 $timeSlots = array(
     '10:00-12:30', '13:00-15:30', '16:00-18:30',
     '19:00-21:30', '22:00-00:30'
@@ -68,7 +63,7 @@ if (isset($_POST['searchSeats']) && isset($_POST['movieId']) && isset($_POST['re
 
     if ($seatsResult->num_rows > 0) {
         while ($row = $seatsResult->fetch_assoc()) {
-            // Check if this seat is already reserved (status='active') for the selected movie, date and time
+            // Check if this seat is already reserved
             $checkSql = "SELECT reservation_id FROM reservations WHERE movie_id = ? AND seat_id = ? AND reservation_date = ? AND time_slot = ? AND status = 'active'";
             $checkStmt = $conn->prepare($checkSql);
             $checkStmt->bind_param("iiss", $selectedMovieId, $row['seat_id'], $selectedDate, $selectedTime);
@@ -77,15 +72,13 @@ if (isset($_POST['searchSeats']) && isset($_POST['movieId']) && isset($_POST['re
 
             // Add availability status to the seat data
             $row['is_booked'] = ($checkResult->num_rows > 0);
-            $availableSeats[] = $row; // Now includes ALL seats (booked and available)
+            $availableSeats[] = $row; 
 
             $checkStmt->close();
         }
     }
-
     $showSeats = true;
 }
-
 $conn->close();
 ?>
 <!DOCTYPE html>
@@ -99,6 +92,21 @@ $conn->close();
     <link rel="stylesheet" href="../../assets/css/components.css" />
     <link rel="stylesheet" href="../../assets/css/responsive.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Style for selected seats */
+        .cinema-seat.selected .seat-icon {
+            color: #ff8c00; 
+            transform: scale(1.1);
+        }
+        .cinema-seat.selected {
+            border-color: #ff8c00;
+        }
+        /* Fix for emoji icons */
+        .cinema-seat-grid .cinema-seat .seat-icon {
+            font-size: 24px;
+            line-height: 1;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -121,10 +129,8 @@ $conn->close();
                 <p>Email: <?php echo htmlspecialchars($userEmail); ?></p>
             </div>
 
-            <!-- Movie, Date and Time Selection Form -->
             <form id="searchForm" method="post" action="reservation.php">
                 <h3>Step 1: Select Movie, Date and Time</h3>
-
                 <div class="form-group">
                     <label for="movieId">Select Movie: <span style="color: #dc1f26;">*</span></label>
                     <select id="movieId" name="movieId" required="required">
@@ -137,14 +143,12 @@ $conn->close();
                         <?php endforeach; ?>
                     </select>
                 </div>
-
                 <div class="form-group">
                     <label for="reservationDate">Screening Date: <span style="color: #dc1f26;">*</span></label>
                     <input type="date" id="reservationDate" name="reservationDate" required="required"
                            value="<?php echo htmlspecialchars($selectedDate); ?>"
                            min="<?php echo date('Y-m-d'); ?>" />
                 </div>
-
                 <div class="form-group">
                     <label for="timeSlot">Showtime: <span style="color: #dc1f26;">*</span></label>
                     <select id="timeSlot" name="timeSlot" required="required">
@@ -157,7 +161,6 @@ $conn->close();
                         <?php endforeach; ?>
                     </select>
                 </div>
-
                 <div class="btn-group">
                     <button type="submit" name="searchSeats" class="btn btn-primary">Search Available Seats</button>
                     <button type="button" id="clearSearchBtn" class="btn btn-secondary">Clear</button>
@@ -166,23 +169,23 @@ $conn->close();
             </form>
 
             <?php if ($showSeats): ?>
-                <!-- Seat Selection Form -->
                 <form id="reservationForm" method="post" action="reserve.php">
-                    <h3>Step 2: Select Your Seat</h3>
+                    <h3>Step 2: Select Your Seats</h3>
 
                     <input type="hidden" name="movieId" value="<?php echo htmlspecialchars($selectedMovieId); ?>" />
                     <input type="hidden" name="movieTitle" value="<?php echo htmlspecialchars($selectedMovieTitle); ?>" />
                     <input type="hidden" name="reservationDate" value="<?php echo htmlspecialchars($selectedDate); ?>" />
                     <input type="hidden" name="timeSlot" value="<?php echo htmlspecialchars($selectedTime); ?>" />
 
+                    <input type="hidden" id="selectedSeatsData" name="selectedSeatsData" value="" />
+                    <input type="hidden" id="selectedHallName" name="hallName" value="" />
+
                     <?php if (count($availableSeats) > 0):
                         // Count available vs booked seats
                         $totalSeats = count($availableSeats);
                         $bookedSeats = 0;
                         foreach ($availableSeats as $seat) {
-                            if ($seat['is_booked']) {
-                                $bookedSeats++;
-                            }
+                            if ($seat['is_booked']) $bookedSeats++;
                         }
                         $availableCount = $totalSeats - $bookedSeats;
                     ?>
@@ -193,7 +196,6 @@ $conn->close();
                             <p class="price-tag"><strong><?php echo $availableCount; ?></strong> available / <strong><?php echo $totalSeats; ?></strong> total seats</p>
                         </div>
 
-                        <!-- Cinema Screen Indicator -->
                         <div class="cinema-screen">
                             <div class="screen-bar">SCREEN</div>
                         </div>
@@ -201,28 +203,26 @@ $conn->close();
                         <div style="text-align: center; margin: 30px auto; max-width: 700px;">
                             <div style="display: inline-flex; gap: 20px; align-items: center; flex-wrap: wrap; justify-content: center;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%); border: 3px solid #2ecc71; border-radius: 8px;"></div>
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%); border: 3px solid #2ecc71; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size:20px;"></div>
                                     <span style="color: #ccc;">Available</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #9b59b6 0%, #8e44ad 100%); border: 3px solid #9b59b6; border-radius: 8px;"></div>
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #9b59b6 0%, #8e44ad 100%); border: 3px solid #9b59b6; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size:20px;"></div>
                                     <span style="color: #ccc;">VIP</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #ff8c00 0%, #ff6600 100%); border: 3px solid #ff8c00; border-radius: 8px; box-shadow: 0 0 10px rgba(255, 140, 0, 0.6);"></div>
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #ff8c00 0%, #ff6600 100%); border: 3px solid #ff8c00; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size:20px;"></div>
                                     <span style="color: #ff8c00; font-weight: 600;">Selected</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #555 0%, #333 100%); border: 3px solid #666; border-radius: 8px; opacity: 0.6;"></div>
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(180deg, #555 0%, #333 100%); border: 3px solid #666; border-radius: 8px; opacity: 0.6; display:flex; align-items:center; justify-content:center; font-size:20px;"></div>
                                     <span style="color: #999;">Occupied</span>
                                 </div>
                             </div>
-                            <p style="color: #d4af37; margin-top: 15px; font-size: 14px;">💡 Click on any available seat to select it</p>
+                            <p style="color: #d4af37; margin-top: 15px;">👆 Click on available seats to select multiple tickets</p>
                         </div>
 
-                        <!-- Organize seats by hall and create cinema layout -->
                         <?php
-                        // Group seats by hall
                         $seatsByHall = [];
                         foreach ($availableSeats as $seat) {
                             $seatsByHall[$seat['hall_name']][] = $seat;
@@ -239,23 +239,27 @@ $conn->close();
                                     <?php foreach ($hallSeats as $seat):
                                         $isBooked = $seat['is_booked'];
                                         $seatClass = ($seat['seat_type'] == 'VIP') ? 'vip-seat' : 'standard-seat';
-                                        if ($isBooked) {
-                                            $seatClass .= ' booked-seat';
-                                        }
-                                        $titleText = htmlspecialchars($seat['hall_name']) . ' - Seat ' . htmlspecialchars($seat['seat_number']) . ' (' . htmlspecialchars($seat['seat_type']) . ')';
-                                        if ($isBooked) {
-                                            $titleText .= ' - OCCUPIED';
-                                        }
+                                        if ($isBooked) $seatClass .= ' booked-seat';
+                                        
+                                        $titleText = htmlspecialchars($seat['hall_name']) . ' - Seat ' . htmlspecialchars($seat['seat_number']);
+                                        if ($isBooked) $titleText .= ' - OCCUPIED';
                                     ?>
                                         <div class="cinema-seat <?php echo $seatClass; ?>"
                                              data-seat-id="<?php echo $seat['seat_id']; ?>"
                                              data-seat-number="<?php echo htmlspecialchars($seat['seat_number']); ?>"
                                              data-hall-name="<?php echo htmlspecialchars($seat['hall_name']); ?>"
                                              data-seat-type="<?php echo htmlspecialchars($seat['seat_type']); ?>"
-                                             data-description="<?php echo htmlspecialchars($seat['description']); ?>"
                                              data-is-booked="<?php echo $isBooked ? 'true' : 'false'; ?>"
                                              title="<?php echo $titleText; ?>">
-                                            <div class="seat-icon"><?php echo $isBooked ? '🚫' : '💺'; ?></div>
+                                            <div class="seat-icon">
+                                                <?php 
+                                                    if ($isBooked) {
+                                                        echo '🚫'; // Occupied
+                                                    } else {
+                                                        echo '💺'; // Available
+                                                    }
+                                                ?>
+                                            </div>
                                             <div class="seat-label"><?php echo htmlspecialchars($seat['seat_number']); ?></div>
                                         </div>
                                     <?php endforeach; ?>
@@ -263,25 +267,13 @@ $conn->close();
                             </div>
                         <?php endforeach; ?>
 
-                        <!-- Selected Seat Info Box -->
-                        <div id="seat-info-box" style="display: none;" class="seat-info-card">
-                            <h4>Selected Seat Information</h4>
-                            <p><strong>Hall:</strong> <span id="info-hall"></span></p>
-                            <p><strong>Seat:</strong> <span id="info-seat"></span></p>
-                            <p><strong>Type:</strong> <span id="info-type"></span></p>
-                            <p><strong>Details:</strong> <span id="info-desc"></span></p>
-                        </div>
-
-                        <input type="hidden" id="selectedSeatId" name="seatId" value="" />
-                        <input type="hidden" id="selectedSeatNumber" name="seatNumber" value="" />
-                        <input type="hidden" id="selectedHallName" name="hallName" value="" />
-
                         <div id="selectionMessage" style="display: none;" class="message message-success">
-                            <p>Selected: <strong id="selectedSeatDisplay"></strong></p>
+                            <p>Selected Seats: <strong id="selectedSeatDisplay"></strong></p>
+                            <p style="font-size: 0.9em; margin-top: 5px;">Total Tickets: <strong id="ticketCount">0</strong> (Maximum 4 tickets)</p>
                         </div>
 
                         <div class="btn-group">
-                            <button type="submit" id="reserveBtn" class="btn btn-success" disabled="disabled">Reserve</button>
+                            <button type="submit" id="reserveBtn" class="btn btn-success" disabled="disabled">Reserve Selected Seats</button>
                             <button type="button" id="clearSelectionBtn" class="btn btn-secondary">Clear Selection</button>
                         </div>
                     <?php else: ?>
@@ -305,9 +297,14 @@ $conn->close();
          * Reservation page JavaScript and jQuery functionality
          */
         $(document).ready(function() {
-            var selectedSeatId = '';
-            var selectedSeatNumber = '';
-            var selectedHallName = '';
+            // MODIFIED: Array to store selected seat objects
+            var selectedSeats = []; 
+            // RULE 1: Maximum tickets allowed per transaction (Client-side check)
+            const MAX_TICKETS = 4;
+            
+            // Set minimum date to today
+            var today = new Date().toISOString().split('T')[0];
+            $('#reservationDate').attr('min', today);
 
             // Clear search form button
             $('#clearSearchBtn').on('click', function() {
@@ -316,83 +313,111 @@ $conn->close();
                 $('#timeSlot').val('');
             });
 
-            // Cancel button - return to home page
+            // Cancel button
             $('#cancelBtn').on('click', function() {
                 window.location.href = '../../index.php';
             });
 
-            // Cinema seat click handler
+            // Cinema seat click handler (Multi-select logic with MAX_TICKETS check)
             $('.cinema-seat').on('click', function() {
-                // Check if seat is already booked
                 var isBooked = $(this).data('is-booked');
                 if (isBooked === 'true' || $(this).hasClass('booked-seat')) {
-                    // Show alert for occupied seat
                     alert('This seat is already occupied. Please select another seat.');
-                    return; // Stop execution
+                    return;
                 }
 
-                // Remove selection from other seats
-                $('.cinema-seat').removeClass('selected');
+                var seatId = $(this).data('seat-id');
+                var seatNumber = $(this).data('seat-number');
+                var hallName = $(this).data('hall-name');
+                
+                // Check if seat is already in the selected array
+                var existingIndex = selectedSeats.findIndex(function(s) {
+                    return s.id === seatId;
+                });
 
-                // Add selection to clicked seat
-                $(this).addClass('selected');
+                if (existingIndex !== -1) {
+                    // If exists -> Remove it (Deselect)
+                    selectedSeats.splice(existingIndex, 1);
+                    $(this).removeClass('selected');
+                } else {
+                    // RULE 2: Single Hall Check
+                    if (selectedSeats.length > 0) {
+                        var firstHall = selectedSeats[0].hall;
+                        if (hallName !== firstHall) {
+                            alert('You can only select seats within the same Hall (' + firstHall + ') for a single reservation.');
+                            return; 
+                        }
+                    }
+                    
+                    // RULE 1: Maximum Ticket Check
+                    if (selectedSeats.length >= MAX_TICKETS) {
+                        alert('You can only reserve a maximum of ' + MAX_TICKETS + ' tickets per transaction.');
+                        return; 
+                    }
+                    
+                    // If not exists -> Add it (Select)
+                    selectedSeats.push({
+                        id: seatId,
+                        number: seatNumber,
+                        hall: hallName
+                    });
+                    $(this).addClass('selected');
+                }
 
-                // Get seat information
-                selectedSeatId = $(this).data('seat-id');
-                selectedSeatNumber = $(this).data('seat-number');
-                selectedHallName = $(this).data('hall-name');
-                var seatType = $(this).data('seat-type');
-                var seatDescription = $(this).data('description');
-
-                // Update hidden form fields
-                $('#selectedSeatId').val(selectedSeatId);
-                $('#selectedSeatNumber').val(selectedSeatNumber);
-                $('#selectedHallName').val(selectedHallName);
-
-                // Update seat info box
-                $('#info-hall').text(selectedHallName);
-                $('#info-seat').text(selectedSeatNumber);
-                $('#info-type').text(seatType);
-                $('#info-desc').text(seatDescription);
-                $('#seat-info-box').fadeIn();
-
-                // Display selection message
-                $('#selectedSeatDisplay').text(selectedHallName + ' - Seat ' + selectedSeatNumber);
-                $('#selectionMessage').fadeIn();
-
-                // Enable reserve button
-                $('#reserveBtn').prop('disabled', false);
-
-                // Smooth scroll to seat info
-                $('html, body').animate({
-                    scrollTop: $('#seat-info-box').offset().top - 100
-                }, 500);
+                updateUI();
             });
+
+            // Function to update UI elements and hidden form fields
+            function updateUI() {
+                // 1. Update hidden JSON input field
+                $('#selectedSeatsData').val(JSON.stringify(selectedSeats));
+                
+                // 2. Update Hall Name (Use the first seat's hall for reference)
+                if (selectedSeats.length > 0) {
+                    $('#selectedHallName').val(selectedSeats[0].hall);
+                } else {
+                    $('#selectedHallName').val('');
+                }
+
+                // 3. Update display text and buttons
+                if (selectedSeats.length > 0) {
+                    // Join all seat numbers with commas (e.g., "A1, A2, B5")
+                    var numbers = selectedSeats.map(function(s) { return s.number; }).join(', ');
+                    $('#selectedSeatDisplay').text(numbers);
+                    $('#ticketCount').text(selectedSeats.length);
+                    
+                    $('#selectionMessage').fadeIn();
+                    $('#reserveBtn').prop('disabled', false);
+                } else {
+                    $('#selectionMessage').fadeOut();
+                    $('#reserveBtn').prop('disabled', true);
+                }
+            }
 
             // Clear selection button
             $('#clearSelectionBtn').on('click', function() {
+                selectedSeats = [];
                 $('.cinema-seat').removeClass('selected');
-                $('#selectedSeatId').val('');
-                $('#selectedSeatNumber').val('');
-                $('#selectedHallName').val('');
-                $('#selectionMessage').fadeOut();
-                $('#seat-info-box').fadeOut();
-                $('#reserveBtn').prop('disabled', true);
+                updateUI();
             });
 
             // Form validation before submission
             $('#reservationForm').on('submit', function(e) {
-                if ($('#selectedSeatId').val() === '') {
+                if (selectedSeats.length === 0) {
                     e.preventDefault();
-                    alert('Please select a seat to reserve');
+                    alert('Please select at least one seat to reserve.');
                     return false;
                 }
+                
+                // Final check on submit (in case JavaScript manipulation happened)
+                if (selectedSeats.length > MAX_TICKETS) {
+                    e.preventDefault();
+                    alert('Maximum of ' + MAX_TICKETS + ' tickets allowed. Please adjust your selection.');
+                    return false;
+                }
+
                 return true;
             });
-
-            // Set minimum date to today
-            var today = new Date().toISOString().split('T')[0];
-            $('#reservationDate').attr('min', today);
         });
     </script>
 </body>
