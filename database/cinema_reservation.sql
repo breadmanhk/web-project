@@ -59,6 +59,9 @@ CREATE TABLE reservations (
     FOREIGN KEY (movie_id) REFERENCES movies(movie_id),
     FOREIGN KEY (seat_id) REFERENCES seats(seat_id)
 );
+-- Insert member data
+INSERT INTO members (first_name, last_name, mailing_address, contact_phone, email, password) VALUES
+('test', 'test', 'test','12345678','test@test.com','$2y$10$b9tUsaircu29XuPcJ4tmVu06vuJkP0xB3etHoD96XtHCcVvMsOJA6');
 
 -- Insert movie data
 INSERT INTO movies (movie_title, genre, duration, rating, description) VALUES

@@ -3,7 +3,7 @@
 **SEHS4517 Web Application Development and Management**
 Semester 1, 2025-2026
 
-## 📁 Professional Project Structure
+## 📁 Project Structure
 
 ```
 web project/
@@ -49,15 +49,35 @@ web project/
 ### 1. Start Apache & MySQL (XAMPP)
 ### 2. Import `database/cinema_reservation.sql` to phpMyAdmin
 ### 3. Start Node.js server: `cd server && node server.js`
-### 4. Access: `http://localhost/web project/index.php`
+### 4. Access: `http://localhost/web-project/index.php`
+
+## Initial Test Account
+
+The database includes a pre-created test account for immediate testing:
+
+| Field        | Value           |
+|--------------|-----------------|
+| **Email**    | `test@test.com` |
+| **Password** | `1234`          |
+| **Name**     | Test Test       |s
+
+**Usage:**
+1. Click "Login" on the homepage
+2. Enter the credentials above
+3. Start making reservations!
+
+> **Note:** The password is securely hashed using bcrypt in the database.
 
 ##  Features
 
 - Dynamic movie loading from database
-- Secure user authentication
-- Seat reservation system
-- Professional cinema theme
-- Responsive design
+- Secure user authentication (bcrypt password hashing)
+- Visual cinema seat selection layout
+- Real-time seat availability (shows occupied/available seats)
+- Status-based reservation system (active/cancelled/completed)
+- Professional cinema theme with responsive design
+- jQuery animations and interactive elements
+- Node.js Express.js integration for confirmation page
 
 ---
 **© 2025 CineMax Theatre**
