@@ -7,7 +7,7 @@
  * On failure: displays error message
  */
 
-// Start session to store user information
+// Start session to store user information, LEE Cheuk Him
 session_start();
 
 // Include database configuration
