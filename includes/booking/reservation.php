@@ -318,7 +318,7 @@ $conn->close();
                 window.location.href = '../../index.php';
             });
 
-            // Cinema seat click handler (Multi-select logic with MAX_TICKETS check)
+            // Cinema seat click handler (Multi-select logic with MAX_TICKETS check) --wilson
             $('.cinema-seat').on('click', function() {
                 var isBooked = $(this).data('is-booked');
                 if (isBooked === 'true' || $(this).hasClass('booked-seat')) {
@@ -336,11 +336,11 @@ $conn->close();
                 });
 
                 if (existingIndex !== -1) {
-                    // If exists -> Remove it (Deselect)
+                    // If exists -> Remove it (Deselect)--wilson
                     selectedSeats.splice(existingIndex, 1);
                     $(this).removeClass('selected');
                 } else {
-                    // RULE 2: Single Hall Check
+                    // RULE 2: Single Hall Check--wilson
                     if (selectedSeats.length > 0) {
                         var firstHall = selectedSeats[0].hall;
                         if (hallName !== firstHall) {
@@ -349,7 +349,7 @@ $conn->close();
                         }
                     }
                     
-                    // RULE 1: Maximum Ticket Check
+                    // RULE 1: Maximum Ticket Check--wilson
                     if (selectedSeats.length >= MAX_TICKETS) {
                         alert('You can only reserve a maximum of ' + MAX_TICKETS + ' tickets per transaction.');
                         return; 
