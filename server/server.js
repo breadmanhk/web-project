@@ -1,5 +1,7 @@
 /**
  * SEHS4517 Web Application Development and Management
+ * Class: Group 103
+ * Group: 1
  * Node.js Express Server for CineMax Theatre
  * Receives reservation data from PHP and generates thank you page
  */

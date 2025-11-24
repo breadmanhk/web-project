@@ -1,26 +1,28 @@
 <?php
 /**
  * SEHS4517 Web Application Development and Management
+ * Class: Group 103
+ * Group: 1
  * Reserve Seat PHP Script (Multi-Seat Version)
  * Processes multiple seat reservations, stores in MySQL, and forwards to Node.js
  */
 
-// Start session
+// Session mechanism: Start session, we will use session mechanism to store logged-in user info
 session_start();
 
-// Check if user is logged in
+// Session mechanism: This will check if user is logged in
 if (!isset($_SESSION['member_id']) || !isset($_SESSION['email'])) {
     header('Location: login.html');
     exit();
 }
 
-// Include database configuration
+// PHP function: Include database configuration file
 require_once '../config.php';
 
-// Get user information from session
+// Session mechanism: This will get user information from session
 $userEmail = $_SESSION['email'];
 
-// Initialize variables
+// PHP function: Initialize variables we will use later
 $movieId = '';
 $movieTitle = '';
 $hallName = '';
@@ -29,22 +31,22 @@ $timeSlot = '';
 $errorMessage = '';
 $success = false;
 
-// RULE 1: Set maximum tickets allowed per transaction (Server-side constraint)
+// PHP function: Rule 1 - Set maximum tickets allowed per transaction (Server-side constraint)
 $MAX_TICKETS = 4;
 
-// Check if form is submitted
+// PHP POST method: This will check if form is submitted with POST method
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Get basic form data
+    // PHP POST method: This will get basic form data
     $movieId = intval($_POST['movieId']);
     $movieTitle = trim($_POST['movieTitle']);
     $reservationDate = trim($_POST['reservationDate']);
     $timeSlot = trim($_POST['timeSlot']);
     
-    // Receive JSON string for multiple seats and decode it
+    // PHP POST method: Receive JSON string for multiple seats and decode it
     $selectedSeatsData = isset($_POST['selectedSeatsData']) ? $_POST['selectedSeatsData'] : '[]';
     $selectedSeats = json_decode($selectedSeatsData, true); // Convert to PHP Array
 
-    // Server-side validation
+    // PHP function: Server-side validation and message handling
     $isValid = true;
 
     if (empty($movieId)) {
@@ -62,19 +64,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $isValid = false;
     }
 
-    // Check if at least one seat is selected
+    // PHP function: Check if at least one seat is selected
     if ((!is_array($selectedSeats) || count($selectedSeats) === 0) && $isValid) {
         $errorMessage = 'Please select at least one seat';
         $isValid = false;
     }
 
-    // RULE 1 Check: Enforce maximum ticket limit
+    // PHP function: Rule 1 - Check: Enforce maximum ticket limit
     if (count($selectedSeats) > $MAX_TICKETS && $isValid) {
         $errorMessage = 'You can only reserve a maximum of ' . $MAX_TICKETS . ' tickets per transaction.';
         $isValid = false;
     }
 
-    // RULE 2 Check: Enforce single-hall rule
+    // PHP function: Rule 2 - Check: Enforce single-hall rule
     if ($isValid) {
         $firstHallName = null;
         foreach ($selectedSeats as $seat) {
@@ -91,12 +93,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
 
-    // If validation passes, process reservation
+    // PHP function: If validation passes, process reservation
     if ($isValid) {
-        // Get database connection
+        // MySQL function: Get database connection
         $conn = getDBConnection();
         
-        // STEP 1: Race Condition Check
+        // MySQL function: Step 1 - Race Condition Check
         // Check if ANY of the selected seats have been taken by someone else just now
         $alreadyReservedSeats = [];
         
@@ -110,28 +112,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $result = $checkStmt->get_result();
             
             if ($result->num_rows > 0) {
-                // If found, this seat is already taken
+                // PHP function: If found, this seat is already taken
                 $alreadyReservedSeats[] = $seat['number'];
             }
         }
         $checkStmt->close();
 
         if (count($alreadyReservedSeats) > 0) {
-            // If any seats were taken, block the whole transaction
+            // PHP function: If any seats were taken, block the whole transaction
             $errorMessage = 'Error: The following seats have just been booked by someone else: ' . implode(', ', $alreadyReservedSeats);
             $isValid = false;
         } else {
-            // STEP 2: Insert reservations into database
+            // MySQL function: Step 2: Insert reservations into database
             $insertSql = "INSERT INTO reservations (member_email, movie_id, movie_title, seat_id, seat_number, hall_name, reservation_date, time_slot, status) 
                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')";
             $insertStmt = $conn->prepare($insertSql);
             
-            // Arrays to collect data for Node.js response
+            // PHP function: Arrays to collect data for Node.js response
             $allSeatNumbers = [];
             $finalHallName = ''; // Capture one hall name for the receipt
             $allInserted = true;
 
-            // Loop through each selected seat and insert record
+            // PHP function: Loop through each selected seat and insert record
             foreach ($selectedSeats as $seat) {
                 $currentSeatId = intval($seat['id']);
                 $currentSeatNum = $seat['number'];
@@ -152,10 +154,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($allInserted) {
                 $success = true;
 
-                // STEP 3: Send data to Node.js Express server
+                // PHP function: Prepare and send data to Node.js Express server
                 // Combine all seat numbers into a string (e.g., "A1, A2, B5")
                 $seatNumberString = implode(', ', $allSeatNumbers);
-
                 $nodeServerUrl = 'http://localhost:3000/thankyou';
 
                 // Prepare data payload
@@ -168,21 +169,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     'timeSlot' => $timeSlot
                 );
 
-                // Initialize cURL session
+                // PHP cURL function: Initialize cURL session
                 $ch = curl_init($nodeServerUrl);
                 curl_setopt($ch, CURLOPT_POST, 1);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 
-                // Execute cURL request
+                // PHP cURL function: Execute cURL request
                 $response = curl_exec($ch);
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
 
-                // Check if Node.js server responded successfully
+                // PHP cURL function: Check if Node.js server responded successfully
                 if ($httpCode == 200) {
-                    // Display the response from Node.js server (Thank You page)
+                    // PHP cURL function: Display the response from Node.js server (Thank You page)
                     echo $response;
                     exit();
                 } else {
@@ -243,9 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 
     <script>
-        /**
-         * jQuery fade-in animation
-         */
+        // jQuery fade-in animation
         $(document).ready(function() {
             $('main').addClass('fade-in');
         });
