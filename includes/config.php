@@ -1,7 +1,9 @@
 <?php
 /**
- * Database Configuration File
  * SEHS4517 Web Application Development and Management
+ * Class: Group 103
+ * Group: 1
+ * Database Configuration File
  * Configuration for MySQL database connection
  */
 

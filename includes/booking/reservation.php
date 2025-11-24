@@ -1,39 +1,45 @@
 <?php
 /**
  * SEHS4517 Web Application Development and Management
+ * Class: Group 103
+ * Group: 1
  * Cinema Seat Reservation Page PHP Script (Multi-Seat Version)
  * Allows logged-in members to reserve MULTIPLE cinema seats
  */
 
+// Session mechanism: Start session, we will use session mechanism to store logged-in user info
 session_start();
 
-// Check if user is logged in
+// Session mechanism: This will check if user is logged in
 if (!isset($_SESSION['member_id']) || !isset($_SESSION['email'])) {
     header('Location: login.html');
     exit();
 }
 
+// PHP function: Include database configuration file
 require_once '../config.php';
 
+// Session mechanism: This will get user information from session
 $userEmail = $_SESSION['email'];
 $firstName = $_SESSION['first_name'];
 $lastName = $_SESSION['last_name'];
 
-// Initialize variables
+// PHP function: Initialize variables we will use later
 $selectedMovieId = '';
 $selectedMovieTitle = '';
 $selectedDate = '';
 $selectedTime = '';
-$selectedMoviePoster = ''; // ADDED: Variable for poster path
+$selectedMoviePoster = '';
 $availableSeats = array();
 $showSeats = false;
 
+// PHP function: This will define available time slots
 $timeSlots = array(
     '10:00-12:30', '13:00-15:30', '16:00-18:30',
     '19:00-21:30', '22:00-00:30'
 );
 
-// Get all movies from database
+// MySQL function: Get all movies from database
 $conn = getDBConnection();
 $moviesSql = "SELECT movie_id, movie_title, genre, duration, rating, description FROM movies ORDER BY movie_title";
 $moviesResult = $conn->query($moviesSql);
@@ -44,29 +50,23 @@ if ($moviesResult->num_rows > 0) {
     }
 }
 
-// Check if movie, date and time are submitted
+// PHP POST method: This will check if movie, date and time are submitted
 if (isset($_POST['searchSeats']) && isset($_POST['movieId']) && isset($_POST['reservationDate']) && isset($_POST['timeSlot'])) {
     $selectedMovieId = intval($_POST['movieId']);
     $selectedDate = $_POST['reservationDate'];
     $selectedTime = $_POST['timeSlot'];
 
-    // Get selected movie title and poster path
+    // PHP function: Get selected movie title and poster path
     foreach ($movies as $movie) {
         if ($movie['movie_id'] == $selectedMovieId) {
             $selectedMovieTitle = $movie['movie_title'];
-            
-            // NEW LOGIC: Determine the poster file path
-            // Assumes images are in the path: ../../assets/images/ (relative to includes/booking/reservation.php)
             $posterFileName = str_replace(' ', '_', $movie['movie_title']) . '.jpg';
             $posterPath = '../../assets/images/' . $posterFileName;
             
-            // Check if poster image exists
+            // PHP function: This will check if poster image exists
             if (file_exists($posterPath)) {
                 $selectedMoviePoster = $posterPath;
             } else {
-                // Option: Use a placeholder if the specific image is not found
-                // If you have a placeholder image like placeholder.svg, use it here:
-                // $selectedMoviePoster = '../../assets/images/placeholder.svg';
                 $selectedMoviePoster = ''; // Keep it empty if no image is found
             }
             
@@ -74,20 +74,20 @@ if (isset($_POST['searchSeats']) && isset($_POST['movieId']) && isset($_POST['re
         }
     }
 
-    // Get all seats and check their availability status
+    // MySQL function: Get all seats and check their availability status
     $seatsSql = "SELECT seat_id, hall_name, seat_number, seat_type, description FROM seats ORDER BY hall_name, seat_number";
     $seatsResult = $conn->query($seatsSql);
 
     if ($seatsResult->num_rows > 0) {
         while ($row = $seatsResult->fetch_assoc()) {
-            // Check if this seat is already reserved
+            // MySQL function: Check if this seat is already reserved
             $checkSql = "SELECT reservation_id FROM reservations WHERE movie_id = ? AND seat_id = ? AND reservation_date = ? AND time_slot = ? AND status = 'active'";
             $checkStmt = $conn->prepare($checkSql);
             $checkStmt->bind_param("iiss", $selectedMovieId, $row['seat_id'], $selectedDate, $selectedTime);
             $checkStmt->execute();
             $checkResult = $checkStmt->get_result();
 
-            // Add availability status to the seat data
+            // MySQL function: Add availability status to the seat data
             $row['is_booked'] = ($checkResult->num_rows > 0);
             $availableSeats[] = $row; 
 
@@ -110,7 +110,7 @@ $conn->close();
     <link rel="stylesheet" href="../../assets/css/responsive.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* Style for selected seats */
+        /* CSS Style for selected seats */
         .cinema-seat.selected .seat-icon {
             color: #ff8c00; 
             transform: scale(1.1);
@@ -118,7 +118,6 @@ $conn->close();
         .cinema-seat.selected {
             border-color: #ff8c00;
         }
-        /* Fix for emoji icons */
         .cinema-seat-grid .cinema-seat .seat-icon {
             font-size: 24px;
             line-height: 1;
@@ -317,32 +316,29 @@ $conn->close();
     </div>
 
     <script>
-        /**
-         * Reservation page JavaScript and jQuery functionality
-         */
+        //jQuery function part
         $(document).ready(function() {
-            // MODIFIED: Array to store selected seat objects
+            // Javascript: Rule 1 - Maximum tickets allowed per transaction (Client-side check)
             var selectedSeats = []; 
-            // RULE 1: Maximum tickets allowed per transaction (Client-side check)
             const MAX_TICKETS = 4;
             
-            // Set minimum date to today
+            // jQuery: Set minimum date to today
             var today = new Date().toISOString().split('T')[0];
             $('#reservationDate').attr('min', today);
 
-            // Clear search form button
+            // jQuery function: Clear search form button
             $('#clearSearchBtn').on('click', function() {
                 $('#movieId').val('');
                 $('#reservationDate').val('');
                 $('#timeSlot').val('');
             });
 
-            // Cancel button
+            // jQuery function: Cancel button
             $('#cancelBtn').on('click', function() {
                 window.location.href = '../../index.php';
             });
 
-            // Cinema seat click handler (Multi-select logic with MAX_TICKETS check) --wilson
+            // jQuery function: Cinema seat click handler (Multi-select logic with MAX_TICKETS check)
             $('.cinema-seat').on('click', function() {
                 var isBooked = $(this).data('is-booked');
                 if (isBooked === 'true' || $(this).hasClass('booked-seat')) {
@@ -354,17 +350,17 @@ $conn->close();
                 var seatNumber = $(this).data('seat-number');
                 var hallName = $(this).data('hall-name');
                 
-                // Check if seat is already in the selected array
+                // jQuery function: Check if seat is already in the selected array
                 var existingIndex = selectedSeats.findIndex(function(s) {
                     return s.id === seatId;
                 });
 
                 if (existingIndex !== -1) {
-                    // If exists -> Remove it (Deselect)--wilson
+                    // If exists -> Remove it (Deselect)
                     selectedSeats.splice(existingIndex, 1);
                     $(this).removeClass('selected');
                 } else {
-                    // RULE 2: Single Hall Check--wilson
+                    // Javascript: Rule 2 - Single Hall Check
                     if (selectedSeats.length > 0) {
                         var firstHall = selectedSeats[0].hall;
                         if (hallName !== firstHall) {
@@ -373,7 +369,7 @@ $conn->close();
                         }
                     }
                     
-                    // RULE 1: Maximum Ticket Check--wilson
+                    // Javascript: Rule 3 - Maximum Ticket Check
                     if (selectedSeats.length >= MAX_TICKETS) {
                         alert('You can only reserve a maximum of ' + MAX_TICKETS + ' tickets per transaction.');
                         return; 
@@ -391,7 +387,7 @@ $conn->close();
                 updateUI();
             });
 
-            // Function to update UI elements and hidden form fields
+            // jQuery function: Function to update UI elements and hidden form fields
             function updateUI() {
                 // 1. Update hidden JSON input field
                 $('#selectedSeatsData').val(JSON.stringify(selectedSeats));
@@ -418,14 +414,14 @@ $conn->close();
                 }
             }
 
-            // Clear selection button
+            // jQuery function: Clear selection button
             $('#clearSelectionBtn').on('click', function() {
                 selectedSeats = [];
                 $('.cinema-seat').removeClass('selected');
                 updateUI();
             });
 
-            // Form validation before submission
+            // jQuery function: Form validation before submission
             $('#reservationForm').on('submit', function(e) {
                 if (selectedSeats.length === 0) {
                     e.preventDefault();
@@ -433,7 +429,7 @@ $conn->close();
                     return false;
                 }
                 
-                // Final check on submit (in case JavaScript manipulation happened)
+                // jQuery function: Final check on submit (in case JavaScript manipulation happened)
                 if (selectedSeats.length > MAX_TICKETS) {
                     e.preventDefault();
                     alert('Maximum of ' + MAX_TICKETS + ' tickets allowed. Please adjust your selection.');

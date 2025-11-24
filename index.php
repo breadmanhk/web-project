@@ -1,6 +1,8 @@
 <?php
 /**
  * SEHS4517 Web Application Development and Management
+ * Class: Group 103
+ * Group: 1
  * CineMax Theatre - Dynamic Homepage
  * Fetches movie data from MySQL database
  */

@@ -1,6 +1,8 @@
 <?php
 /**
  * SEHS4517 Web Application Development and Management
+ * Class: Group 103
+ * Group: 1
  * Login Authentication PHP Script
  * Validates user credentials against MySQL database
  * On success: redirects to reservation page

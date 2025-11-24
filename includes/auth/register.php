@@ -1,6 +1,8 @@
 <?php
 /**
  * SEHS4517 Web Application Development and Management
+ * Class: Group 103
+ * Group: 1
  * Member Registration PHP Script
  * Handles member registration form submission and stores data in MySQL database
  */
