@@ -41,10 +41,15 @@ $conn->close();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <!-- Promotional Banner -->
-    <div class="promo-banner">
-        Join CineMax A-List! Get exclusive benefits and save up to 4 movies every week. <a href="register.html">Register Now</a>
-    </div>
+
+    <?php
+    if (!isset($_SESSION['member_id']) || !isset($_SESSION['email'])) {
+    ?>
+        <!-- Promotional Banner -->
+        <div class="promo-banner">
+            Join CineMax A-List! Get exclusive benefits and save up to 4 movies every week. <a href="register.html">Register Now</a>
+        </div>
+    <?php } ?>
 
     <!-- Header Navigation -->
     <header>
