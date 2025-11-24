@@ -5,7 +5,8 @@
  * Group: 1
  * Member Registration PHP Script
  * Handles member registration form submission and stores data in MySQL database
- */
+ * Lee Men Ngai
+ */ 
 
 // Include database configuration
 require_once '../config.php';
