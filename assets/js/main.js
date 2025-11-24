@@ -1,5 +1,7 @@
 /**
  * SEHS4517 Web Application Development and Management
+ * Class: Group 103
+ * Group: 1
  * CineMax Theatre - Main JavaScript
  * Handles homepage animations and movie carousel functionality
  */
