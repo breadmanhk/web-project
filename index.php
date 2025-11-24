@@ -66,13 +66,6 @@ $conn->close();
             <!-- Movies Section -->
             <h2>Movies at CineMax</h2>
 
-            <!-- Movie Tabs -->
-            <div class="movie-tabs">
-                <a href="#" class="active">Now Playing</a>
-                <a href="#">Coming Soon</a>
-                <a href="#">On Demand</a>
-            </div>
-
             <!-- Movie Carousel -->
             <div class="movie-carousel-container">
                 <button class="carousel-btn carousel-prev">‹</button>
