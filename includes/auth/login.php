@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['last_name'] = $user['last_name'];
 
                 // Redirect to reservation page
-                header('Location: ../../includes/booking/reservation.php');
+                header('Location: ../../index.php');
                 exit();
             } else {
                 // Invalid password

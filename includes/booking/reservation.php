@@ -34,6 +34,10 @@ $selectedMoviePoster = '';
 $availableSeats = array();
 $showSeats = false;
 
+if (isset($_GET['movie_id'])){
+    $selectedMovieId = intval($_GET['movie_id']);
+}
+
 // PHP function: This will define available time slots
 $timeSlots = array(
     '10:00-12:30', '13:00-15:30', '16:00-18:30',
@@ -42,7 +46,7 @@ $timeSlots = array(
 
 // MySQL function: Get all movies from database
 $conn = getDBConnection();
-$moviesSql = "SELECT movie_id, movie_title, genre, duration, rating, description FROM movies ORDER BY movie_title";
+$moviesSql = "SELECT movie_id, movie_title, genre, duration, rating, description FROM movies ORDER BY movie_id ASC";
 $moviesResult = $conn->query($moviesSql);
 $movies = array();
 if ($moviesResult->num_rows > 0) {

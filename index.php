@@ -7,6 +7,8 @@
  * Fetches movie data from MySQL database
  */
 
+session_start();
+
 // Include database configuration
 require_once 'includes/config.php';
 
@@ -54,8 +56,16 @@ $conn->close();
                 </div>
             </a>
             <nav>
+                <?php
+                if (!isset($_SESSION['member_id']) || !isset($_SESSION['email'])) {
+                ?>
                 <a href="register.html">Register</a>
                 <a href="login.html">Sign In</a>
+
+                <?php } else { ?>
+                    Welcome, <?php echo htmlspecialchars($_SESSION['first_name']); ?>
+                    <a href="includes/auth/logout.php">Sign Out</a>
+                <?php } ?>
             </nav>
         </div>
     </header>
@@ -101,7 +111,7 @@ $conn->close();
                                         <span class="genre-tag"><?php echo htmlspecialchars($movie['genre']); ?></span>
                                         <p style="color: #999; font-size: 13px;">Released November, 2025</p>
                                         <p class="movie-description"><?php echo htmlspecialchars($movie['description']); ?></p>
-                                        <a href="login.html" class="get-tickets-btn">Get Tickets</a>
+                                        <a href="includes/booking/reservation.php?movie_id=<?php echo htmlspecialchars($movie['movie_id']); ?>" class="get-tickets-btn">Get Tickets</a>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
