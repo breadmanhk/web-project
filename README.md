@@ -58,8 +58,8 @@ The database includes a pre-created test account for immediate testing:
 | Field        | Value           |
 |--------------|-----------------|
 | **Email**    | `test@test.com` |
-| **Password** | `1234`          |
-| **Name**     | Test Test       |s
+| **Password** | `123456`          |
+| **Name**     | Test Test       |
 
 **Usage:**
 1. Click "Login" on the homepage
