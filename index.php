@@ -9,7 +9,7 @@
 
 session_start();
 
-// Include database configuration
+// Include database configuration, BARRY
 require_once 'includes/config.php';
 
 // Fetch movies from database
