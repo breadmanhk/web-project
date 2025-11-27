@@ -13,7 +13,7 @@ session_start();
 
 // Session mechanism: This will check if user is logged in
 if (!isset($_SESSION['member_id']) || !isset($_SESSION['email'])) {
-    header('Location: login.html');
+    header('Location: ../../login.html');
     exit();
 }
 
