@@ -5,7 +5,7 @@
  * Group: 1
  * Cinema Seat Reservation Page PHP Script (Multi-Seat Version)
  * Allows logged-in members to reserve MULTIPLE cinema seats
- * Developed by Chan Suet Ying
+ * Developed by Chan Suet Ying - 24064653S
  */
 
 // Session mechanism: Start session, we will use session mechanism to store logged-in user info

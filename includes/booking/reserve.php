@@ -5,7 +5,7 @@
  * Group: 1
  * Reserve Seat PHP Script (Multi-Seat Version)
  * Processes multiple seat reservations, stores in MySQL, and forwards to Node.js
- * Developed by Chan Suet Ying
+ * Developed by Chan Suet Ying - 24064653S
  */
 
 // Session mechanism: Start session, we will use session mechanism to store logged-in user info
